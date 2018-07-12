@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import seaborn as sns  ## Commit 1 : Création d'un main + affichage spectre 
 eeg = pd.read_excel('Copie de Moyenne_10Min_Fabien_TempsFrequence.xlsx')
 
 
@@ -52,12 +52,49 @@ def spectre(s, t):
     return np.absolute(tfd)*2/N
 
 
-delta = categorie('Delta')
-delta = delta.dropna()  # enleve toutes les lignes avec des NaN
-#delta.iloc[1:, :-2] = conversion_obj_float(delta)
-delta
-t = delta.iloc[:,0]
-#spectre_delta = spectre(delta.iloc[:, 2], t)
+def affichage_spectre(t, spectre, figure=4, sp='Sp', couleur='b'):  ## Commit 1 : Création d'un main + affichage spectre
+    plt.figure(figure)
+    sns.set()
+    freq = np.arange(len(spectre))*1.0/max(t)
+    plt.figure(figure)
+    plt.plot(freq, spectre, couleur)
+    plt.xlabel('Fréquence (en Hz)')
+    labelY = 'Amplitude de ' + sp
+    plt.ylabel(labelY)
+    title = 'Amplitude de ' + sp + ' en fonction de la fréquence #fft by numpy'
+    plt.title(title)
+    plt.show()
+
+
+def conversion_secondes(unite, t):  ## Commit 1 : Création d'un main + affichage spectre
+    t = np.array(t)
+    if unite == 'heure':
+        t *= 3600
+        return t
+    elif unite == 'minute':
+        t *= 60
+        return t
+    elif unite == 'secondes':
+        return t
+    else:
+        return "Erreur : le paramètre d'entrée unite est soit 'heure', soit 'minute', soit 'seconde'"   
+    
+    
+# fonction main()  ## Commit 1 : Création d'un main + affichage spectre
+eeg = pd.read_excel('Copie de Moyenne_10Min_Fabien_TempsFrequence.xlsx')
+    # affiche_signal(eeg)
+    # on prend en exemple la catégorie delta
+    delta = categorie('Delta')
+    delta = delta.dropna()  # enleve toutes les lignes avec des NaN
+    # delta.iloc[1:, :-2] = conversion_obj_float(delta)
+    t = delta.index[1:]
+    t = conversion_secondes('minute', t)
+    Te = (t[1] - t[0])
+    fe = 1 / Te
+    spectre_delta = spectre(delta.iloc[1:, :])
+    spectre_delta
+    affichage_spectre(t, spectre_delta)
+
 
 #CWT (tau, S) = somme (de - inf à +inf) de[x(t) * psi conj ((t-tau)/S)]dt
 # pr morlet, psi(t) = exp(i*a*t)*exp((-t²)/(2*rho²)
